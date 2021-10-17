@@ -5,28 +5,35 @@ using System;
 using System.Data.Common;
 using System.IO;
 using System.Threading;
-using Microsoft.VisualBasic;
 using Spectre.Console;
 
 string[] targetNames = { "node_modules", "obj", "bin" };
-var path = Args[0];
+var path = Args.FirstOrDefault();
 var startDirectory = new DirectoryInfo(path);
+
+if (!startDirectory.Exists)
+{
+    AnsiConsole.MarkupLine($"[red]Directory not found[/][grey]¯\\_(ツ)_/¯[/]");
+    return 1;
+}
+
 var rootDirectoryNode = Scan();
 
 if (rootDirectoryNode.Nodes.Count == 0)
 {
     AnsiConsole.MarkupLine($"\n[green]No matches found![/] {char.ConvertFromUtf32(0x1F44D)}");
-    return;
+    return 0;
 }
 
 if (!ShouldDelete())
 {
     AnsiConsole.MarkupLine($"\n[green]Cancelled {char.ConvertFromUtf32(0x1F628)}[/]");
-    return;
+    return 0;
 }
 
 var leaves = rootDirectoryNode.GetLeafNodes().ToArray();
 RenderDeletionProgress(leaves);
+return 0;
 
 // UI functions
 DirectoryNode Scan()
